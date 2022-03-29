@@ -177,16 +177,7 @@ build_script:
   - ninja -C out/Default third_party/electron_node:headers
   - python %LOCAL_GOMA_DIR%\goma_ctl.py stat
   - python electron/build/profile_toolchain.py --output-json=out/Default/windows_toolchain_profile.json
-  - appveyor PushArtifact out/Default/windows_toolchain_profile.json
-  - appveyor PushArtifact out/Default/dist.zip
-  - appveyor PushArtifact out/Default/shell_browser_ui_unittests.exe
-  - appveyor PushArtifact out/Default/chromedriver.zip
-  - appveyor PushArtifact out/ffmpeg/ffmpeg.zip
   - 7z a node_headers.zip out\Default\gen\node_headers
-  - appveyor PushArtifact node_headers.zip
-  - appveyor PushArtifact out/Default/mksnapshot.zip
-  - appveyor PushArtifact out/Default/hunspell_dictionaries.zip
-  - appveyor PushArtifact out/Default/electron.lib
   - ps: >-
       if ($env:GN_CONFIG -eq 'release') {
         # Needed for msdia140.dll on 64-bit windows
@@ -246,4 +237,19 @@ deploy_script:
         node script/release/ci-release-build.js --job=electron-woa-testing --ci=VSTS --armTest --appveyorJobId=$env:APPVEYOR_JOB_ID $env:APPVEYOR_REPO_BRANCH
       }
 on_finish:
+  - ps: $PWD
+  - appveyor-retry appveyor PushArtifact out\Default\windows_toolchain_profile.json
+  - appveyor-retry appveyor PushArtifact out\Default\dist.zip
+  - appveyor-retry appveyor PushArtifact out\Default\shell_browser_ui_unittests.exe
+  - appveyor-retry appveyor PushArtifact out\Default\chromedriver.zip
+  - appveyor-retry appveyor PushArtifact out\ffmpeg\ffmpeg.zip
+  - appveyor-retry appveyor PushArtifact node_headers.zip
+  - appveyor-retry appveyor PushArtifact out\Default\mksnapshot.zip
+  - appveyor-retry appveyor PushArtifact out\Default\hunspell_dictionaries.zip
+  - appveyor-retry appveyor PushArtifact out\Default\electron.lib
+  - ps: >-
+      if ($env:GN_CONFIG -ne 'release') {
+        appveyor-retry appveyor PushArtifact pdb.zip
+      }
+
   - if exist src\electron\electron.log ( appveyor-retry appveyor PushArtifact src\electron\electron.log )
