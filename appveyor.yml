@@ -192,7 +192,6 @@ build_script:
         # It's useful to have pdb files when debugging testing builds that are
         # built on CI.
         7z a pdb.zip out\Default\*.pdb
-        appveyor-retry appveyor PushArtifact pdb.zip
       }
   - python electron/script/zip_manifests/check-zip-manifest.py out/Default/dist.zip electron/script/zip_manifests/dist_zip.win.%TARGET_ARCH%.manifest
 test_script:
@@ -237,19 +236,19 @@ deploy_script:
         node script/release/ci-release-build.js --job=electron-woa-testing --ci=VSTS --armTest --appveyorJobId=$env:APPVEYOR_JOB_ID $env:APPVEYOR_REPO_BRANCH
       }
 on_finish:
-  - ps: $PWD
-  - appveyor-retry appveyor PushArtifact out\Default\windows_toolchain_profile.json
-  - appveyor-retry appveyor PushArtifact out\Default\dist.zip
-  - appveyor-retry appveyor PushArtifact out\Default\shell_browser_ui_unittests.exe
-  - appveyor-retry appveyor PushArtifact out\Default\chromedriver.zip
-  - appveyor-retry appveyor PushArtifact out\ffmpeg\ffmpeg.zip
-  - appveyor-retry appveyor PushArtifact node_headers.zip
-  - appveyor-retry appveyor PushArtifact out\Default\mksnapshot.zip
-  - appveyor-retry appveyor PushArtifact out\Default\hunspell_dictionaries.zip
-  - appveyor-retry appveyor PushArtifact out\Default\electron.lib
+  - cd ..
+  - if exist out\Default\windows_toolchain_profile.json ( appveyor-retry appveyor PushArtifact out\Default\windows_toolchain_profile.json )
+  - if exist out\Default\dist.zip (appveyor-retry appveyor PushArtifact out\Default\dist.zip)
+  - if exist out\Default\shell_browser_ui_unittests.exe (appveyor-retry appveyor PushArtifact out\Default\shell_browser_ui_unittests.exe)
+  - if exist out\Default\chromedriver.zip (appveyor-retry appveyor PushArtifact out\Default\chromedriver.zip)
+  - if exist out\ffmpeg\ffmpeg.zip (appveyor-retry appveyor PushArtifact out\ffmpeg\ffmpeg.zip)
+  - if exist node_headers.zip (appveyor-retry appveyor PushArtifact node_headers.zip)
+  - if exist out\Default\mksnapshot.zip (appveyor-retry appveyor PushArtifact out\Default\mksnapshot.zip)
+  - if exist out\Default\hunspell_dictionaries.zip (appveyor-retry appveyor PushArtifact out\Default\hunspell_dictionaries.zip)
+  - if exist out\Default\electron.lib (appveyor-retry appveyor PushArtifact out\Default\electron.lib)
   - ps: >-
-      if ($env:GN_CONFIG -ne 'release') {
+      if (Test-Path "pdb.zip" -And $env:GN_CONFIG -ne 'release') {
         appveyor-retry appveyor PushArtifact pdb.zip
       }
 
-  - if exist src\electron\electron.log ( appveyor-retry appveyor PushArtifact src\electron\electron.log )
+  - if exist electron\electron.log ( appveyor-retry appveyor PushArtifact electron\electron.log )
